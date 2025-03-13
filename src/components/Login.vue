@@ -5,8 +5,8 @@ import api from '../services/api';
 
 const router = useRouter();
 const title = ref("Login");
-const username = ref("");
-const password = ref("");
+const username = ref("qowalu@gmail.com");
+const password = ref("Pa$$w0rd!");
 const error = ref("");
 
 async function login(event) {
