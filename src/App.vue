@@ -3,60 +3,89 @@ import { shallowRef, ref, onMounted } from 'vue';
 import Login from './components/Login.vue';
 import Signup from './components/Signup.vue';
 import Notes from './components/Notes.vue';
+import api from './services/api';
 
-const status = shallowRef(null); // Store the current status
+const status = shallowRef(null);
 const isLoggedIn = ref(false);
+const apiStatus = ref('Checking API status...');
+const apiStatusColor = ref('gray');
 
-// Check if the user is logged in
-function checkLoginStatus() {
-  const accessToken = localStorage.getItem("access_token");
-  isLoggedIn.value = !!accessToken; // Set to true if accessToken exists
+async function checkApiStatus() {
+  try {
+    const response = await api('/api/users/test');
+    if (response.status === 200) {
+      apiStatus.value = 'API is live';
+      apiStatusColor.value = 'green';
+    } else {
+      apiStatus.value = 'API is down';
+      apiStatusColor.value = 'red';
+    }
+  } catch (error) {
+    apiStatus.value = 'API is down';
+    apiStatusColor.value = 'red';
+  }
 }
 
-// Show Signup component
+function checkLoginStatus() {
+  const accessToken = localStorage.getItem("access_token");
+  isLoggedIn.value = !!accessToken;
+}
+
 function showSignup() {
   status.value = Signup;
 }
 
-// Show Login component
 function showLogin() {
   status.value = Login;
 }
 
-// Logout the user
 function logout() {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
-  isLoggedIn.value = false; // Update login status
-  status.value = ""; // Reset the displayed component
+  isLoggedIn.value = false;
+  status.value = "";
 }
 
-// Check login status when the component mounts
-onMounted(checkLoginStatus);
+onMounted(() => {
+  checkLoginStatus();
+  checkApiStatus();
+});
 </script>
 
 <template>
-  <!-- Show Signup and Login buttons only if the user is not logged in -->
-  <div v-if="!isLoggedIn">
+  <div class="api-banner" :style="{ backgroundColor: apiStatusColor }">
+    {{ apiStatus }}
+  </div>
+
+  <div class="auth-buttons" v-if="!isLoggedIn">
     <button @click="showSignup">Signup</button>
     <button @click="showLogin">Login</button>
   </div>
 
-  <!-- Show Logout button only if the user is logged in -->
   <div v-if="isLoggedIn">
     <button @click="logout">Logout</button>
   </div>
 
   <main>
-    <!-- Show Signup or Login component based on status -->
     <component :is="status" v-if="!isLoggedIn" />
-
-    <!-- Show Notes component if the user is logged in -->
     <Notes v-if="isLoggedIn" />
   </main>
 </template>
 
 <style scoped>
+.api-banner {
+  text-align: center;
+  padding: 10px;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.auth-buttons {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
 button {
   margin: 5px;
   padding: 10px 15px;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'http://157.230.108.128:8000/',
+	baseURL: 'https://spanking-patient-commitments-higher.trycloudflare.com',
 	headers: {
 		'Content-Type': 'application/json',
 	},
